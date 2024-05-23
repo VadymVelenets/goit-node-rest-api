@@ -50,4 +50,20 @@ async function addContact(name, email, phone) {
   }
 }
 
-export { listContacts, getContactById, removeContact, addContact };
+async function updContact(id, name, email, phone) {
+  try {
+    const data = await fs.promises.readFile(contactsPath);
+    const contacts = JSON.parse(data);
+    const neededContact = contacts.find((contact) => contact.id === id);
+    if (!neededContact) return HttpError(404);
+    if (name) neededContact.name = name;
+    if (email) neededContact.email = email;
+    if (phone) neededContact.phone = phone;
+    await fs.promises.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+    return neededContact;
+  } catch (error) {
+    return null;
+  }
+}
+
+export { listContacts, getContactById, removeContact, addContact, updContact };
