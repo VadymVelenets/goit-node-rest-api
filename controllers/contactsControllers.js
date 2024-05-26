@@ -1,5 +1,12 @@
 import HttpError from "../helpers/HttpError.js";
-import { addContact, getContactById, listContacts, removeContact, updContact } from "../services/contactsServices.js";
+import {
+  addContact,
+  getContactById,
+  listContacts,
+  removeContact,
+  updContact,
+  updFavorite,
+} from "../services/contactsServices.js";
 
 export const getAllContacts = async (req, res, next) => {
   try {
@@ -49,15 +56,18 @@ export const createContact = async (req, res, next) => {
 
 export const updateContact = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    if (!Object.keys(req.body).length) {
-      return next(HttpError(400, "Body must have at least one field"));
-    }
-    const updatedContact = await updContact(id, req.body);
-    if (!updatedContact) {
-      next(HttpError(404));
-    }
-    res.status(200).send(updatedContact);
+    const { name, email, phone } = req.body;
+    const upContact = await updContact(req.params.id, name, email, phone);
+    res.status(200).send(upContact);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateFavorite = async (req, res, next) => {
+  try {
+    const updatedFavorite = await updFavorite(req.params.id, req.body.favorite);
+    res.status(200).send(updatedFavorite);
   } catch (error) {
     next(error);
   }

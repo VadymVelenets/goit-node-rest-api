@@ -1,23 +1,16 @@
-import fs from "fs";
-import path from "path";
 import { v4 as uuidv4 } from "uuid";
-
-const contactsPath = path.join("db", "contacts.json");
+import { Contacts } from "../models/contactsModel.js";
 
 async function listContacts() {
-  try {
-    const data = await fs.promises.readFile(contactsPath);
-    return JSON.parse(data);
-  } catch (error) {
+  return await Contacts.find().catch((error) => {
+    console.error(error);
     return [];
-  }
+  });
 }
 
 async function getContactById(contactId) {
   try {
-    const data = await fs.promises.readFile(contactsPath);
-    const contacts = JSON.parse(data);
-    return contacts.find((contact) => contact.id === contactId) || null;
+    return (await Contacts.findOne({ _id: contactId })) || null;
   } catch (error) {
     return null;
   }
@@ -25,25 +18,15 @@ async function getContactById(contactId) {
 
 async function removeContact(contactId) {
   try {
-    const data = await fs.promises.readFile(contactsPath);
-    const contacts = JSON.parse(data);
-    const removedContact = contacts.find((contact) => contact.id === contactId);
-    if (!removedContact) return null;
-    const updatedContacts = contacts.filter((contact) => contact.id !== contactId);
-    await fs.promises.writeFile(contactsPath, JSON.stringify(updatedContacts, null, 2));
-    return removedContact;
+    return await Contacts.deleteOne({ _id: contactId });
   } catch (error) {
     return null;
   }
 }
 
-async function addContact(name, email, phone) {
+async function addContact(name, email, phone, favorite) {
   try {
-    const data = await fs.promises.readFile(contactsPath);
-    const contacts = JSON.parse(data);
-    const newContact = { id: uuidv4(), name, email, phone };
-    contacts.push(newContact);
-    await fs.promises.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+    const newContact = await Contacts.create({ id: uuidv4(), name, email, phone, favorite });
     return newContact;
   } catch (error) {
     return null;
@@ -52,18 +35,16 @@ async function addContact(name, email, phone) {
 
 async function updContact(id, name, email, phone) {
   try {
-    const data = await fs.promises.readFile(contactsPath);
-    const contacts = JSON.parse(data);
-    const neededContact = contacts.find((contact) => contact.id === id);
-    if (!neededContact) return HttpError(404);
-    if (name) neededContact.name = name;
-    if (email) neededContact.email = email;
-    if (phone) neededContact.phone = phone;
-    await fs.promises.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-    return neededContact;
+    const updatedContact = await Contacts.findOneAndUpdate({ _id: id }, { name, email, phone }, { new: true });
+    return updatedContact;
   } catch (error) {
     return null;
   }
 }
 
-export { listContacts, getContactById, removeContact, addContact, updContact };
+async function updFavorite(id, favorite) {
+  const updatedFavorite = await Contacts.findOneAndUpdate({ _id: id }, { favorite }, { new: true });
+  return updatedFavorite;
+}
+
+export { listContacts, getContactById, removeContact, addContact, updContact, updFavorite };
