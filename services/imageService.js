@@ -37,7 +37,7 @@ export class ImageService {
     const tempFilePath = path.join(process.cwd(), "tmp", file.filename);
 
     if (file.size > options?.maxFileSize ? options.maxFileSize * 1024 * 1024 : 1 * 1024 * 1024) {
-      throw HttpError(400, "File is too large...");
+      next(HttpError(400, "File is too large..."));
     }
 
     const avatar = await Jimp.read(tempFilePath);

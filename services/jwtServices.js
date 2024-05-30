@@ -8,9 +8,11 @@ export function signToken(id) {
 }
 
 export function checkToken(token) {
-  const { id } = jwt.verify(token, process.env.JWT_SECRET);
-  if (!token) {
-    next(HttpError(401, "Unauthorized... no token"));
+  if (!token) next(HttpError(401, "Unauthorized... no token"));
+  try {
+    const { id } = jwt.verify(token, process.env.JWT_SECRET);
+    return id;
+  } catch (error) {
+    next(HttpError(401, "Unauthorized... error in checkToken"));
   }
-  return id;
 }
